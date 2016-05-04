@@ -4,6 +4,8 @@ namespace Laravel\Envoy\Console;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 trait Command
 {
@@ -52,9 +54,9 @@ trait Command
      */
     public function ask($question)
     {
-        $question = '<comment>'.$question.'</comment> ';
-
-        return $this->getHelperSet()->get('dialog')->ask($this->output, $question);
+      $question = new Question('<comment>'.$question.'</comment> ');
+      
+      return $this->getHelperSet()->get('question')->ask($this->input, $this->output, $question);
     }
 
     /**
@@ -67,10 +69,9 @@ trait Command
     public function confirmTaskWithUser($task, $question)
     {
         $question = $question === true ? 'Are you sure you want to run the ['.$task.'] task?' : (string) $question;
+        $question = new ConfirmationQuestion('<comment>'.$question.' [y/N]:</comment> ', false);
 
-        $question = '<comment>'.$question.' [y/N]:</comment> ';
-
-        return  $this->getHelperSet()->get('dialog')->askConfirmation($this->output, $question, false);
+        return  $this->getHelperSet()->get('question')->ask($this->input, $this->output, $question);
     }
 
     /**
@@ -82,7 +83,10 @@ trait Command
     public function secret($question)
     {
         $question = '<comment>'.$question.'</comment> ';
-
-        return $this->getHelperSet()->get('dialog')->askHiddenResponse($this->output, $question, false);
+        $question = new Question($question, false);
+        $question->setHidden(true);
+        $question->setHiddenFallback(false);
+        
+        return $this->getHelperSet()->get('dialog')->ask($this->input, $this->output, $question);
     }
 }
